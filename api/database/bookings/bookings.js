@@ -1,14 +1,14 @@
 /**
  * @file Bookings database operations for SpaceMania workspace management system
- * @module db/bookings
+ * @module booking/bookings
  * @description Handles all database operations related to workspace bookings including:
  * - Creating new bookings
  * - Checking workspace availability
  * - Retrieving user booking history
- * @requires ./index
+ * @requires ../connection/connect
  */
 
-const db = require('./index');
+const db = require('../connection/connect');
 
 /**
  * @async
