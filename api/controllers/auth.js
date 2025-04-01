@@ -11,12 +11,13 @@
  */
 
 const {
-    createUser,
-    findUserByEmail,
-    comparePassword,
-    generateAuthToken
-} = require('../users/users');
+  createUser,
+  findUserByEmail,
+  comparePassword,
+  generateAuthToken,
+} = require('../database/users/user');
 
+const { ValidationError, BadRequestError } = require('../errors/index');
 /**
  * @async
  * @function register
@@ -34,15 +35,23 @@ const {
  * - Validation fails (invalid email/password format)
  * - Database operation fails
  */
-const register = async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        const user = await createUser(name, email, password);
-        const token = generateAuthToken(user.id);
-        res.status(201).json({ user, token });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
+const register = async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      throw new ValidationError('name, email or passowrd can not empty');
     }
+
+    const userExist = await findUserByEmail(email);
+    if (userExist) {
+      throw new BadRequestError('Email already exists');
+    }
+    const user = await createUser(name, email, password);
+    const token = generateAuthToken(user.id);
+    res.status(201).json({ user, token });
+  } catch (error) {
+    next(error);
+  }
 };
 
 /**
@@ -61,20 +70,23 @@ const register = async (req, res) => {
  * - Password doesn't match
  * - Account is locked/suspended
  */
-const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await findUserByEmail(email);
-
-        if (!user || !(await comparePassword(user, password))) {
-            throw new Error('Invalid login credentials');
-        }
-
-        const token = generateAuthToken(user.id);
-        res.json({ user, token });
-    } catch (error) {
-        res.status(401).json({ error: error.message });
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      throw new ValidationError('name, email or passowrd can not empty');
     }
+    const user = await findUserByEmail(email);
+
+    if (!user || !(await comparePassword(user, password))) {
+      throw new BadRequestError('Invalid login credentials');
+    }
+
+    const token = generateAuthToken(user.id);
+    res.json({ user, token });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = { register, login };
