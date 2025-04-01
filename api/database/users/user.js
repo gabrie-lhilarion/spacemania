@@ -6,12 +6,12 @@
  * - User lookup by email
  * - Password verification
  * - JWT token generation
- * @requires ./index
+ * @requires ../connection/connect
  * @requires bcryptjs
  * @requires jsonwebtoken
  */
 
-const db = require('./index');
+const db = require('../connection/connect');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
