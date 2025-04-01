@@ -1,6 +1,6 @@
 /**
  * @file Bookings database operations for SpaceMania workspace management system
- * @module db/bookings
+ * @module bookings/bookings
  * @description Handles all database operations related to workspace bookings including:
  * - Creating new bookings with validation
  * - Checking workspace availability with capacity constraints
