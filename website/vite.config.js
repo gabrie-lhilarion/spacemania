@@ -3,5 +3,12 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  build: {
+    outDir: "../api/dist", // Output directory relative to the Vite root (storefront directory)
+    emptyOutDir: true, // Ensures that the output directory is cleaned before each build
+  },
+  plugins: [
+    tailwindcss(),
+    react(),
+  ],
 })
