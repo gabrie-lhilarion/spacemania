@@ -1,8 +1,8 @@
-require('express-async-errors');
 const express = require('express');
 const cors = require('cors');
 const errorHandler = require('./middlewares/errorHandler.middleware');
 const authRoutes = require('./routes/auth');
+const userRouter = require('./routes/users');
 
 const setupDatabase = require('./database/setup/setup');
 
@@ -41,8 +41,13 @@ async function initializeApp() {
   // Phase 3: Server Startup
   app.get('/', (req, res) => res.send('Sapce managemnt API Running!'));
 
+  // routers
   app.use('/api/v1/auth', authRoutes);
+  app.use('/api/v1/users', userRouter);
+
+  // error middleware
   app.use(errorHandler);
+
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
