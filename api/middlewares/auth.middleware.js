@@ -1,6 +1,6 @@
 // Importing the `jsonwebtoken` library to handle JSON Web Tokens (JWTs).
 // This library provides methods to sign, verify, and decode JWTs.
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 
 // Importing a custom `AuthenticationError` class from the errors module.
 // This is used to throw specific errors related to authentication failures.
@@ -64,6 +64,7 @@ const authMiddleware = async (req, res, next) => {
 
     // Attach the decoded token (user details) to the `req` object.
     req.user = decodedToken;
+    next();
   } catch (error) {
     // Pass any errors that occur to the next middleware or error handler.
     next(error);
@@ -71,4 +72,4 @@ const authMiddleware = async (req, res, next) => {
 };
 
 // Export the `authMiddleware` function for use in other parts of the application.
-module.exports = { authMiddleware };
+module.exports = authMiddleware;
