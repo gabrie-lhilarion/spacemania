@@ -30,12 +30,12 @@ const jwt = require('jsonwebtoken');
  * - Database operation fails
  */
 const createUser = async (name, email, password, role = 'user') => {
-    const hashedPassword = await bcrypt.hash(password, 8);
-    const result = await db.query(
-        'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *',
-        [name, email, hashedPassword, role]
-    );
-    return result.rows[0];
+  const hashedPassword = await bcrypt.hash(password, 8);
+  const result = await db.query(
+    'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *',
+    [name, email, hashedPassword, role]
+  );
+  return result.rows[0];
 };
 
 /**
@@ -47,8 +47,10 @@ const createUser = async (name, email, password, role = 'user') => {
  * @throws {Error} Will throw an error if database query fails
  */
 const findUserByEmail = async (email) => {
-    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-    return result.rows[0];
+  const result = await db.query('SELECT * FROM users WHERE email = $1', [
+    email,
+  ]);
+  return result.rows[0];
 };
 
 /**
@@ -62,7 +64,7 @@ const findUserByEmail = async (email) => {
  * @throws {Error} Will throw an error if bcrypt comparison fails
  */
 const comparePassword = async (user, password) => {
-    return await bcrypt.compare(password, user.password);
+  return await bcrypt.compare(password, user.password);
 };
 
 /**
@@ -73,12 +75,86 @@ const comparePassword = async (user, password) => {
  * @throws {Error} Will throw an error if JWT signing fails
  */
 const generateAuthToken = (userId) => {
-    return jwt.sign({ id: userId }, process.env.JWT_SECRET);
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET);
+};
+
+/**
+ * @async
+ * @function getAllUsers
+ * @description Fetches all users from the database.
+ * @returns {Promise<Array<Object>>} An array of user objects.
+ * @throws {Error} Will throw an error if the database query fails.
+ */
+const getAllUsers = async () => {
+  const result = await db.query('SELECT * FROM users');
+  return result.rows; // Return all rows
+};
+
+/**
+ * @async
+ * @function findUserById
+ * @description Fetches a single user by their ID.
+ * @param {number} id - The ID of the user to fetch.
+ * @returns {Promise<Object|null>} The user object if found, or `null` if no user exists with the given ID.
+ * @throws {Error} Will throw an error if the database query fails.
+ */
+const findUserById = async (id) => {
+  const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+  return result.rows[0]; // Return the first row (user) if found
+};
+
+/**
+ * @async
+ * @function updateUser
+ * @description Updates a user's details in the database.
+ * @param {number} id - The ID of the user to update.
+ * @param {Object} updates - An object containing the fields to update and their new values.
+ * @returns {Promise<Object|null>} The updated user object if successful, or `null` if no user exists with the given ID.
+ * @throws {Error} Will throw an error if the database query fails.
+ * @example
+ * // Example usage:
+ * const updates = { name: 'New Name', email: 'newemail@example.com' };
+ * const updatedUser = await updateUser(1, updates);
+ */
+const updateUser = async (id, updates) => {
+  // Assuming `updates` is an object with keys matching column names
+  const columns = Object.keys(updates)
+    .map((key, index) => `${key} = $${index + 2}`)
+    .join(', ');
+  const values = Object.values(updates);
+  const result = await db.query(
+    `UPDATE users SET ${columns} WHERE id = $1 RETURNING *`,
+    [id, ...values]
+  );
+  return result.rows[0]; // Return the updated user
+};
+
+/**
+ * @async
+ * @function deleteUser
+ * @description Deletes a user from the database by their ID.
+ * @param {number} id - The ID of the user to delete.
+ * @returns {Promise<Object|null>} The deleted user object if successful, or `null` if no user exists with the given ID.
+ * @throws {Error} Will throw an error if the database query fails.
+ * @example
+ * // Example usage:
+ * const deletedUser = await deleteUser(1);
+ */
+const deleteUser = async (id) => {
+  const result = await db.query('DELETE FROM users WHERE id = $1 RETURNING *', [
+    id,
+  ]); // Return deleted user
+
+  return result.rows[0];
 };
 
 module.exports = {
-    createUser,
-    findUserByEmail,
-    comparePassword,
-    generateAuthToken
+  createUser,
+  findUserByEmail,
+  comparePassword,
+  generateAuthToken,
+  getAllUsers,
+  findUserById,
+  updateUser,
+  deleteUser,
 };
