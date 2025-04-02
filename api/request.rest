@@ -1,0 +1,19 @@
+### register user
+POST http://localhost:5000/api/v1/auth/register
+Content-Type: application/json
+
+{
+    "name": "Muhammad Bashir Ibrahim",
+    "email": "mbashiribrahim7@gmail.com",
+    "password": "muhdbashir"
+}
+
+
+### user login
+POST http://localhost:5000/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "email": "mbashiribrahim7@gmail.com",
+    "password": "muhdbashir"
+}
