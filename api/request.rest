@@ -17,3 +17,22 @@ Content-Type: application/json
     "email": "mbashiribrahim7@gmail.com",
     "password": "muhdbashir"
 }
+
+### get all users
+GET http://localhost:5000/api/v1/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNTgzMDQ2fQ.HDBGdK-760kQPQtJfvzn8bS-Ez2sGQeVRiOiKB9BzaQ
+
+
+### get single user
+GET http://localhost:5000/api/v1/users/1
+
+### update user
+PUT  http://localhost:5000/api/v1/users/1
+Content-Type: application/json
+
+{
+    "name": "muhd bashir"
+}
+
+### delete user
+DELETE http://localhost:5000/api/v1/users/1
