@@ -1,7 +1,6 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -19,11 +18,14 @@
     "express-async-errors": "^3.1.1",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.14.1"
+    "nodemailer": "^6.10.0",
+    "pg": "^8.14.1",
+    "twilio": "^5.5.1"
   },
   "devDependencies": {
     "eslint": "^9.23.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3"
-  }
+  },
+  "description": ""
 }

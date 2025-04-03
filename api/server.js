@@ -1,11 +1,20 @@
 const express = require('express');
 const cors = require('cors');
+const dotenv = require('dotenv'); // Import dotenv to load environment variables
 const errorHandler = require('./middlewares/errorHandler.middleware');
 const authRoutes = require('./routes/auth.routes');
 const userRouter = require('./routes/users.routes');
 const workspaceRouter = require('./routes/workspaces.routes');
 
+// Import notification features
+const sendEmail = require('./notifications/sendEmail');
+const sendSMS = require('./notifications/sendSMS');
 const setupDatabase = require('./database/setup/setup.setup');
+
+
+// load enviroment variable from the .env file
+
+dotenv.config();
 
 async function initializeApp() {
   // Phase 1: Database Setup
