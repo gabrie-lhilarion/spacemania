@@ -20,15 +20,17 @@ Content-Type: application/json
 
 ### get all users
 GET http://localhost:5000/api/v1/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNTgzMDQ2fQ.HDBGdK-760kQPQtJfvzn8bS-Ez2sGQeVRiOiKB9BzaQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNjY5MzA3fQ.w7gW1ql-2v-sjNYEnO6Y-_Wy-25bSsnfUOTuoQtmg24
 
 
 ### get single user
 GET http://localhost:5000/api/v1/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNjY5MzA3fQ.w7gW1ql-2v-sjNYEnO6Y-_Wy-25bSsnfUOTuoQtmg24
 
 ### update user
 PUT  http://localhost:5000/api/v1/users/1
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNjY5MzA3fQ.w7gW1ql-2v-sjNYEnO6Y-_Wy-25bSsnfUOTuoQtmg24
 
 {
     "name": "muhd bashir"
@@ -36,3 +38,26 @@ Content-Type: application/json
 
 ### delete user
 DELETE http://localhost:5000/api/v1/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNjY5MzA3fQ.w7gW1ql-2v-sjNYEnO6Y-_Wy-25bSsnfUOTuoQtmg24
+
+
+### Create a new workspace
+POST http://localhost:5000/api/v1/workspaces
+Content-Type: application/json
+
+{
+  "name": "Conference Room A",
+  "description": "Main meeting space",
+  "type_id": 1,
+  "floor": 2,
+  "location": "North Wing",
+  "base_capacity": 8,
+  "type_specific_attributes": { "has_vc": true },
+  "amenity_ids": [1, 2]
+}
+
+### Get a workspace by ID
+GET http://localhost:5000/api/v1/workspaces/2
+
+### Get all workspaces with filtering and pagination
+GET http://localhost:5000/api/v1/workspaces?type_id=1&floor=2&includeInactive=true&limit=10&offset=0

@@ -4,7 +4,7 @@ const { StatusCodes } = require('http-status-codes');
 
 // Importing the base `CustomError` class.
 // This class is extended to create specific custom error types, such as `BadRequestError`.
-const CustomError = require('./customError');
+const CustomError = require('./customError.errors');
 
 /**
  * @class BadRequestError
