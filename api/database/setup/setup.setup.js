@@ -1,4 +1,4 @@
-const db = require('../connection/connect');
+const db = require('../connection/connect.connection');
 
 /**
  * Initializes the database by creating necessary tables, constraints, indexes, and default data.
@@ -7,25 +7,25 @@ const db = require('../connection/connect');
  * @returns {Promise<void>} Resolves when the database is successfully set up.
  */
 async function setupDatabase() {
-    const client = await db.pool.connect();
-    try {
-        console.log('Starting database initialization...');
-        await client.query('BEGIN');
+  const client = await db.pool.connect();
+  try {
+    console.log('Starting database initialization...');
+    await client.query('BEGIN');
 
-        /**
-         * Enables the PostgreSQL `btree_gist` extension.
-         * This extension is required for the `EXCLUDE USING gist` constraint in the `bookings` table.
-         */
-        await client.query(`CREATE EXTENSION IF NOT EXISTS btree_gist`);
+    /**
+     * Enables the PostgreSQL `btree_gist` extension.
+     * This extension is required for the `EXCLUDE USING gist` constraint in the `bookings` table.
+     */
+    await client.query(`CREATE EXTENSION IF NOT EXISTS btree_gist`);
 
-        // ====================== USERS TABLE ======================
-        /**
-         * Creates the `users` table to store application users.
-         * 
-         * - `role`: Defines the user's role (`user`, `admin`, `manager`).
-         * - `created_at` and `updated_at` timestamps for record tracking.
-         */
-        await client.query(`
+    // ====================== USERS TABLE ======================
+    /**
+     * Creates the `users` table to store application users.
+     *
+     * - `role`: Defines the user's role (`user`, `admin`, `manager`).
+     * - `created_at` and `updated_at` timestamps for record tracking.
+     */
+    await client.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -38,14 +38,14 @@ async function setupDatabase() {
             )
         `);
 
-        // ====================== WORKSPACE TYPES TABLE ======================
-        /**
-         * Stores different types of workspaces.
-         * 
-         * - `default_capacity`: The default number of users a workspace type can accommodate.
-         * - `requires_approval`: If true, bookings for this type need admin approval.
-         */
-        await client.query(`
+    // ====================== WORKSPACE TYPES TABLE ======================
+    /**
+     * Stores different types of workspaces.
+     *
+     * - `default_capacity`: The default number of users a workspace type can accommodate.
+     * - `requires_approval`: If true, bookings for this type need admin approval.
+     */
+    await client.query(`
             CREATE TABLE IF NOT EXISTS workspace_types (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(50) NOT NULL UNIQUE,
@@ -58,15 +58,15 @@ async function setupDatabase() {
             )
         `);
 
-        // ====================== WORKSPACES TABLE ======================
-        /**
-         * Stores workspace details.
-         * 
-         * - `type_id`: Foreign key linking to `workspace_types`.
-         * - `location`: Description of the workspace location.
-         * - `type_specific_attributes`: JSONB column to store flexible attributes.
-         */
-        await client.query(`
+    // ====================== WORKSPACES TABLE ======================
+    /**
+     * Stores workspace details.
+     *
+     * - `type_id`: Foreign key linking to `workspace_types`.
+     * - `location`: Description of the workspace location.
+     * - `type_specific_attributes`: JSONB column to store flexible attributes.
+     */
+    await client.query(`
             CREATE TABLE IF NOT EXISTS workspaces (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -84,11 +84,11 @@ async function setupDatabase() {
             )
         `);
 
-        // ====================== AMENITIES TABLE ======================
-        /**
-         * Stores available amenities (e.g., projectors, whiteboards).
-         */
-        await client.query(`
+    // ====================== AMENITIES TABLE ======================
+    /**
+     * Stores available amenities (e.g., projectors, whiteboards).
+     */
+    await client.query(`
             CREATE TABLE IF NOT EXISTS amenities (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(100) NOT NULL UNIQUE,
@@ -99,15 +99,15 @@ async function setupDatabase() {
             )
         `);
 
-        // ====================== WORKSPACE AMENITIES TABLE ======================
-        /**
-         * Many-to-many relationship between workspaces and amenities.
-         * 
-         * - `workspace_id`: References a workspace.
-         * - `amenity_id`: References an amenity.
-         * - `quantity`: Number of amenities available in that workspace.
-         */
-        await client.query(`
+    // ====================== WORKSPACE AMENITIES TABLE ======================
+    /**
+     * Many-to-many relationship between workspaces and amenities.
+     *
+     * - `workspace_id`: References a workspace.
+     * - `amenity_id`: References an amenity.
+     * - `quantity`: Number of amenities available in that workspace.
+     */
+    await client.query(`
             CREATE TABLE IF NOT EXISTS workspace_amenities (
                 workspace_id INTEGER NOT NULL,
                 amenity_id INTEGER NOT NULL,
@@ -121,14 +121,14 @@ async function setupDatabase() {
             )
         `);
 
-        // ====================== BOOKINGS TABLE ======================
-        /**
-         * Stores bookings for workspaces.
-         * 
-         * - `start_time` and `end_time`: Define the booked time range.
-         * - `status`: Represents booking status (`pending`, `confirmed`, `cancelled`, etc.).
-         */
-        await client.query(`
+    // ====================== BOOKINGS TABLE ======================
+    /**
+     * Stores bookings for workspaces.
+     *
+     * - `start_time` and `end_time`: Define the booked time range.
+     * - `status`: Represents booking status (`pending`, `confirmed`, `cancelled`, etc.).
+     */
+    await client.query(`
             CREATE TABLE IF NOT EXISTS bookings (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER NOT NULL,
@@ -148,19 +148,19 @@ async function setupDatabase() {
             )
         `);
 
-        // ====================== GIST INDEX FOR TIME CONFLICT CHECK ======================
-        /**
-         * Creates a GIST index to improve query performance for overlapping time range checks.
-         */
-        await client.query(`
+    // ====================== GIST INDEX FOR TIME CONFLICT CHECK ======================
+    /**
+     * Creates a GIST index to improve query performance for overlapping time range checks.
+     */
+    await client.query(`
             CREATE INDEX IF NOT EXISTS bookings_time_range_idx 
             ON bookings USING gist (workspace_id, tstzrange(start_time, end_time, '[]'))
         `);
 
-        /**
-         * Ensures that a workspace cannot be double-booked for the same time range.
-         */
-        await client.query(`
+    /**
+     * Ensures that a workspace cannot be double-booked for the same time range.
+     */
+    await client.query(`
             ALTER TABLE bookings ADD CONSTRAINT no_double_booking
             EXCLUDE USING gist (
                 workspace_id WITH =,
@@ -168,45 +168,45 @@ async function setupDatabase() {
             )
         `);
 
-        // ====================== DEFAULT DATA ======================
-        /**
-         * Inserts default workspace types if they do not already exist.
-         */
-        await client.query(`
+    // ====================== DEFAULT DATA ======================
+    /**
+     * Inserts default workspace types if they do not already exist.
+     */
+    await client.query(`
             INSERT INTO workspace_types (name, description, default_capacity, requires_approval)
             VALUES ('hot_desk', 'Flexible unassigned workstations', 1, false)
             ON CONFLICT (name) DO NOTHING
         `);
 
-        await client.query(`
+    await client.query(`
             INSERT INTO workspace_types (name, description, default_capacity, requires_approval)
             VALUES ('meeting_room', 'Spaces for team meetings', 8, true)
             ON CONFLICT (name) DO NOTHING
         `);
 
-        /**
-         * Inserts default amenities if they do not already exist.
-         */
-        await client.query(`
+    /**
+     * Inserts default amenities if they do not already exist.
+     */
+    await client.query(`
             INSERT INTO amenities (name, description)
             VALUES ('projector', 'Presentation projector')
             ON CONFLICT (name) DO NOTHING
         `);
 
-        await client.query(`
+    await client.query(`
             INSERT INTO amenities (name, description)
             VALUES ('whiteboard', 'Writing surface')
             ON CONFLICT (name) DO NOTHING
         `);
 
-        await client.query('COMMIT');
-        console.log('Database initialized successfully');
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error('Database initialization failed:', err.message);
-    } finally {
-        client.release();
-    }
+    await client.query('COMMIT');
+    console.log('Database initialized successfully');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Database initialization failed:', err.message);
+  } finally {
+    client.release();
+  }
 }
 
 module.exports = setupDatabase;

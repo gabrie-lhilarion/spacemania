@@ -9,7 +9,7 @@
  * @requires ../connection/connect
  */
 
-const db = require('../connection/connect');
+const db = require('../connection/connect.connection');
 
 /**
  * @async
@@ -45,51 +45,51 @@ const db = require('../connection/connect');
  *  }
  */
 const createWorkspace = async (workspaceData) => {
-    const { amenity_ids = [], ...workspaceProps } = workspaceData;
+  const { amenity_ids = [], ...workspaceProps } = workspaceData;
 
-    // Start transaction for atomic operations
-    const client = await db.pool.connect();
-    try {
-        await client.query('BEGIN');
+  // Start transaction for atomic operations
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
 
-        // Insert workspace
-        const workspaceResult = await client.query(
-            `INSERT INTO workspaces 
+    // Insert workspace
+    const workspaceResult = await client.query(
+      `INSERT INTO workspaces 
              (name, description, type_id, floor, location, base_capacity, type_specific_attributes)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
-            [
-                workspaceProps.name,
-                workspaceProps.description,
-                workspaceProps.type_id,
-                workspaceProps.floor,
-                workspaceProps.location,
-                workspaceProps.base_capacity,
-                workspaceProps.type_specific_attributes || null
-            ]
-        );
+      [
+        workspaceProps.name,
+        workspaceProps.description,
+        workspaceProps.type_id,
+        workspaceProps.floor,
+        workspaceProps.location,
+        workspaceProps.base_capacity,
+        workspaceProps.type_specific_attributes || null,
+      ]
+    );
 
-        const workspace = workspaceResult.rows[0];
+    const workspace = workspaceResult.rows[0];
 
-        // Add amenities if provided
-        if (amenity_ids.length > 0) {
-            await client.query(
-                `INSERT INTO workspace_amenities (workspace_id, amenity_id)
+    // Add amenities if provided
+    if (amenity_ids.length > 0) {
+      await client.query(
+        `INSERT INTO workspace_amenities (workspace_id, amenity_id)
                  SELECT $1, unnest($2::int[])`,
-                [workspace.id, amenity_ids]
-            );
-        }
-
-        await client.query('COMMIT');
-
-        // Return enriched workspace data
-        return getWorkspaceById(workspace.id);
-    } catch (err) {
-        await client.query('ROLLBACK');
-        throw err;
-    } finally {
-        client.release();
+        [workspace.id, amenity_ids]
+      );
     }
+
+    await client.query('COMMIT');
+
+    // Return enriched workspace data
+    return getWorkspaceById(workspace.id);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 };
 
 /**
@@ -121,8 +121,8 @@ const createWorkspace = async (workspaceData) => {
  *  }
  */
 const getWorkspaceById = async (id, includeInactive = false) => {
-    const result = await db.query(
-        `SELECT 
+  const result = await db.query(
+    `SELECT 
             w.*,
             wt.name AS type_name,
             (
@@ -139,9 +139,9 @@ const getWorkspaceById = async (id, includeInactive = false) => {
          JOIN workspace_types wt ON w.type_id = wt.id
          WHERE w.id = $1
          ${includeInactive ? '' : 'AND w.is_active = true'}`,
-        [id]
-    );
-    return result.rows[0] || null;
+    [id]
+  );
+  return result.rows[0] || null;
 };
 
 /**
@@ -168,18 +168,18 @@ const getWorkspaceById = async (id, includeInactive = false) => {
  *  }]
  */
 const getAllWorkspaces = async (filters = {}) => {
-    const {
-        type_id,
-        floor,
-        includeInactive = false,
-        limit = 50,
-        offset = 0
-    } = filters;
+  const {
+    type_id,
+    floor,
+    includeInactive = false,
+    limit = 50,
+    offset = 0,
+  } = filters;
 
-    const queryParams = [];
-    let paramCount = 0;
+  const queryParams = [];
+  let paramCount = 0;
 
-    let query = `
+  let query = `
         SELECT 
             w.*,
             wt.name AS type_name,
@@ -193,34 +193,34 @@ const getAllWorkspaces = async (filters = {}) => {
         JOIN workspace_types wt ON w.type_id = wt.id
         WHERE 1=1`;
 
-    if (!includeInactive) {
-        query += ` AND w.is_active = true`;
-    }
+  if (!includeInactive) {
+    query += ` AND w.is_active = true`;
+  }
 
-    if (type_id) {
-        paramCount++;
-        query += ` AND w.type_id = $${paramCount}`;
-        queryParams.push(type_id);
-    }
+  if (type_id) {
+    paramCount++;
+    query += ` AND w.type_id = $${paramCount}`;
+    queryParams.push(type_id);
+  }
 
-    if (floor) {
-        paramCount++;
-        query += ` AND w.floor = $${paramCount}`;
-        queryParams.push(floor);
-    }
+  if (floor) {
+    paramCount++;
+    query += ` AND w.floor = $${paramCount}`;
+    queryParams.push(floor);
+  }
 
-    query += `
+  query += `
         ORDER BY w.name ASC
         LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
 
-    queryParams.push(limit, offset);
+  queryParams.push(limit, offset);
 
-    const result = await db.query(query, queryParams);
-    return result.rows;
+  const result = await db.query(query, queryParams);
+  return result.rows;
 };
 
 module.exports = {
-    createWorkspace,
-    getWorkspaceById,
-    getAllWorkspaces
+  createWorkspace,
+  getWorkspaceById,
+  getAllWorkspaces,
 };

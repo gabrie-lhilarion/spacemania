@@ -15,9 +15,9 @@ const {
   findUserByEmail,
   comparePassword,
   generateAuthToken,
-} = require('../database/users/user');
+} = require('../database/users/user.users');
 
-const { ValidationError, BadRequestError } = require('../errors/index');
+const { ValidationError, BadRequestError } = require('../errors/index.errors');
 /**
  * @async
  * @function register
