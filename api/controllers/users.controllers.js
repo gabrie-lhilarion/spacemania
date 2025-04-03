@@ -1,10 +1,10 @@
 // Importing the `NotFoundError` class from the errors module.
 // This custom error is thrown when a requested resource (e.g., user) is not found.
-const { NotFoundError } = require('../errors/index');
+const { NotFoundError } = require('../errors/index.errors');
 
 // Importing the `users` module, which contains database operations for user-related actions.
 // This module provides functions such as `getAllUsers`, `findUserById`, `updateUser`, and `deleteUser`.
-const users = require('../database/users/user');
+const users = require('../database/users/user.users');
 
 /**
  * @function getAllUsers

@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const errorHandler = require('./middlewares/errorHandler.middleware');
-const authRoutes = require('./routes/auth');
-const userRouter = require('./routes/users');
+const authRoutes = require('./routes/auth.routes');
+const userRouter = require('./routes/users.routes');
+const workspaceRouter = require('./routes/workspaces.routes');
 
-const setupDatabase = require('./database/setup/setup');
+const setupDatabase = require('./database/setup/setup.setup');
 
 async function initializeApp() {
   // Phase 1: Database Setup
@@ -44,6 +45,7 @@ async function initializeApp() {
   // routers
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/users', userRouter);
+  app.use('/api/v1/workspaces', workspaceRouter);
 
   // error middleware
   app.use(errorHandler);
