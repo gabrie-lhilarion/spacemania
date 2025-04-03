@@ -9,7 +9,7 @@
  * @requires .../connection/connect
  */
 
-const db = require('../connection/connect');
+const db = require('../connection/connect.connection');
 
 /**
  * @async
@@ -40,22 +40,31 @@ const db = require('../connection/connect');
  *    workspace_type: 'meeting_room'
  *  }
  */
-const createBooking = async (userId, workspaceId, startTime, endTime, attendees = 1, specialRequests = null) => {
-    // First check capacity constraints
-    const capacityCheck = await db.query(
-        `SELECT w.base_capacity, wt.requires_approval
+const createBooking = async (
+  userId,
+  workspaceId,
+  startTime,
+  endTime,
+  attendees = 1,
+  specialRequests = null
+) => {
+  // First check capacity constraints
+  const capacityCheck = await db.query(
+    `SELECT w.base_capacity, wt.requires_approval
          FROM workspaces w
          JOIN workspace_types wt ON w.type_id = wt.id
          WHERE w.id = $1`,
-        [workspaceId]
+    [workspaceId]
+  );
+
+  if (capacityCheck.rows[0].base_capacity < attendees) {
+    throw new Error(
+      `Attendees exceed workspace capacity of ${capacityCheck.rows[0].base_capacity}`
     );
+  }
 
-    if (capacityCheck.rows[0].base_capacity < attendees) {
-        throw new Error(`Attendees exceed workspace capacity of ${capacityCheck.rows[0].base_capacity}`);
-    }
-
-    const result = await db.query(
-        `INSERT INTO bookings 
+  const result = await db.query(
+    `INSERT INTO bookings 
          (user_id, workspace_id, start_time, end_time, attendees, special_requests, status)
          VALUES ($1, $2, $3, $4, $5, $6, 
            CASE WHEN $7 THEN 'pending' ELSE 'confirmed' END)
@@ -64,17 +73,17 @@ const createBooking = async (userId, workspaceId, startTime, endTime, attendees 
          (SELECT name FROM workspace_types WHERE id = (
            SELECT type_id FROM workspaces WHERE id = $2
          )) AS workspace_type`,
-        [
-            userId,
-            workspaceId,
-            startTime,
-            endTime,
-            attendees,
-            specialRequests,
-            capacityCheck.rows[0].requires_approval
-        ]
-    );
-    return result.rows[0];
+    [
+      userId,
+      workspaceId,
+      startTime,
+      endTime,
+      attendees,
+      specialRequests,
+      capacityCheck.rows[0].requires_approval,
+    ]
+  );
+  return result.rows[0];
 };
 
 /**
@@ -96,9 +105,14 @@ const createBooking = async (userId, workspaceId, startTime, endTime, attendees 
  *    available_slots: 5
  *  }
  */
-const getWorkspaceAvailability = async (workspaceId, startTime, endTime, attendees = 1) => {
-    const result = await db.query(
-        `WITH workspace_info AS (
+const getWorkspaceAvailability = async (
+  workspaceId,
+  startTime,
+  endTime,
+  attendees = 1
+) => {
+  const result = await db.query(
+    `WITH workspace_info AS (
            SELECT w.base_capacity, wt.name AS type_name
            FROM workspaces w
            JOIN workspace_types wt ON w.type_id = wt.id
@@ -117,9 +131,9 @@ const getWorkspaceAvailability = async (workspaceId, startTime, endTime, attende
            wi.base_capacity - COALESCE(cb.total_attendees, 0) >= $4 AS is_available,
            wi.base_capacity - COALESCE(cb.total_attendees, 0) AS available_slots
          FROM workspace_info wi, conflicting_bookings cb`,
-        [workspaceId, startTime, endTime, attendees]
-    );
-    return result.rows[0];
+    [workspaceId, startTime, endTime, attendees]
+  );
+  return result.rows[0];
 };
 
 /**
@@ -148,9 +162,12 @@ const getWorkspaceAvailability = async (workspaceId, startTime, endTime, attende
  *    location: 'Building 2, Floor 3'
  *  }]
  */
-const getUserBookings = async (userId, options = { upcoming: true, limit: 50, offset: 0 }) => {
-    const result = await db.query(
-        `SELECT 
+const getUserBookings = async (
+  userId,
+  options = { upcoming: true, limit: 50, offset: 0 }
+) => {
+  const result = await db.query(
+    `SELECT 
            b.*,
            w.name AS workspace_name,
            wt.name AS workspace_type,
@@ -171,13 +188,13 @@ const getUserBookings = async (userId, options = { upcoming: true, limit: 50, of
          END
          ORDER BY b.start_time ${options.upcoming ? 'ASC' : 'DESC'}
          LIMIT $3 OFFSET $4`,
-        [userId, options.upcoming, options.limit, options.offset]
-    );
-    return result.rows;
+    [userId, options.upcoming, options.limit, options.offset]
+  );
+  return result.rows;
 };
 
 module.exports = {
-    createBooking,
-    getWorkspaceAvailability,
-    getUserBookings
+  createBooking,
+  getWorkspaceAvailability,
+  getUserBookings,
 };

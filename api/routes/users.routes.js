@@ -4,7 +4,7 @@ const express = require('express');
 
 // Importing the `users` controller module.
 // This module contains the logic for handling user-related operations, such as fetching, updating, and deleting users.
-const users = require('../controllers/users');
+const users = require('../controllers/users.controllers');
 
 // Importing the `authMiddleware` function.
 // This middleware is responsible for verifying the JWT token in the `Authorization` header of incoming requests.

@@ -1,0 +1,10 @@
+INSERT INTO workspaces (name, description, type_id, floor, location, base_capacity, is_active, type_specific_attributes, created_at, updated_at) VALUES ('Creative Lab', 'Collaborativeworkspace with whiteboards', 
+  2, 
+  3, 
+  'North Wing', 
+  6, 
+  true, 
+  '{"has_projector": true, "whiteboard_walls": 2}'::jsonb, 
+  NOW(), 
+  NOW()
+);
