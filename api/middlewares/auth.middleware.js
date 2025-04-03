@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 // Importing a custom `AuthenticationError` class from the errors module.
 // This is used to throw specific errors related to authentication failures.
-const { AuthenticationError } = require('../errors/index');
+const { AuthenticationError } = require('../errors/index.errors');
 
 /**
  * Authentication middleware for Express.js applications.

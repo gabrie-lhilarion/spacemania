@@ -20,11 +20,11 @@
  */
 
 // Importing all custom error classes from their respective files.
-const CustomError = require('./customError');
-const BadRequestError = require('./bad_request');
-const NotFoundError = require('./not_found');
-const AuthenticationError = require('./authentication');
-const ValidationError = require('./validation_error');
+const CustomError = require('./customError.errors');
+const BadRequestError = require('./bad_request.errors');
+const NotFoundError = require('./not_found.error');
+const AuthenticationError = require('./authentication.errors');
+const ValidationError = require('./validation_error.errors');
 
 // Exporting all custom error classes as a single module.
 module.exports = {
