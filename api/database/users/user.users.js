@@ -11,7 +11,7 @@
  * @requires jsonwebtoken
  */
 
-const db = require('../connection/connect');
+const db = require('../connection/connect.connection');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
