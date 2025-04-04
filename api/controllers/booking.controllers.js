@@ -10,7 +10,6 @@ const bookingsDb = require('../database/bookings/booking.database');
  */
 async function createBooking(req, res, next) {
     const client = await db.pool.connect();
-
     try {
         const {
             workspaceId,
@@ -19,7 +18,8 @@ async function createBooking(req, res, next) {
             attendees = 1,
             specialRequests,
         } = req.body;
-        const userId = 6;
+
+        const userId = req.user.id;
 
         // Convert string dates to Date objects if needed
         const start = new Date(startTime);

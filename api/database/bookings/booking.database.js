@@ -42,8 +42,6 @@ const getWorkspaceCapacity = async (workspaceId) => {
     [workspaceId]
   );
 
-  console.log('getWorkspaceCapacity:', workspaceId, result.rows); // Debugging output
-
   if (result.rows.length === 0) {
     throw new Error(`Workspace not found with ID: ${workspaceId}`);
   }

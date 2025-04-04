@@ -43,13 +43,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiaWF0IjoxN
 ### create booking
 POST  http://localhost:5000/api/v1/bookings
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNjkxMjU4fQ.M-yfSMpPXAcDW5vc2LijIjxd7O4s_UWKksER5hO7nLg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzQzNzU5OTY3fQ.yn_gwKhib-WnUTIK3CKnxcqBOMsJp0kPWenCTOt3Ly0
 
 {
 
-  "workspaceId": 3,
-  "startTime": "2025-07-25T14:00:00",
-  "endTime": "2025-07-25T16:00:00",
+  "workspaceId": 1,
+  "startTime": "2025-08-25T14:00:00",
+  "endTime": "2025-08-25T16:00:00",
   "attendees": 4,
   "specialRequests": "Need a projector"
 }
