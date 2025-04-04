@@ -9,7 +9,7 @@
  * @requires .../connection/connect
  */
 
-const db = require('../connection/connect');
+const db = require('../connection/connect.connection');
 
 /**
  * @async
@@ -28,10 +28,9 @@ const db = require('../connection/connect');
  * }
  */
 
-
 const getWorkspaceCapacity = async (workspaceId) => {
-    const result = await db.query(
-        `SELECT 
+  const result = await db.query(
+    `SELECT 
             w.base_capacity, 
             wt.name AS type_name,
             wt.requires_approval,
@@ -40,18 +39,17 @@ const getWorkspaceCapacity = async (workspaceId) => {
          FROM workspaces w
          JOIN workspace_types wt ON w.type_id = wt.id
          WHERE w.id = $1`,
-        [workspaceId]
-    );
+    [workspaceId]
+  );
 
-    console.log("getWorkspaceCapacity:", workspaceId, result.rows); // Debugging output
+  console.log('getWorkspaceCapacity:', workspaceId, result.rows); // Debugging output
 
-    if (result.rows.length === 0) {
-        throw new Error(`Workspace not found with ID: ${workspaceId}`);
-    }
+  if (result.rows.length === 0) {
+    throw new Error(`Workspace not found with ID: ${workspaceId}`);
+  }
 
-    return result.rows[0];
+  return result.rows[0];
 };
-
 
 /**
  * @async
@@ -71,37 +69,46 @@ const getWorkspaceCapacity = async (workspaceId) => {
  * - Workspace requires approval but user isn't privileged
  */
 
+const createBooking = async (
+  userId,
+  workspaceId,
+  startTime,
+  endTime,
+  attendees = 1,
+  specialRequests = null
+) => {
+  if (!userId || !workspaceId || !startTime || !endTime) {
+    throw new Error('Missing required booking parameters');
+  }
 
-const createBooking = async (userId, workspaceId, startTime, endTime, attendees = 1, specialRequests = null) => {
-    if (!userId || !workspaceId || !startTime || !endTime) {
-        throw new Error('Missing required booking parameters');
-    }
+  // Convert timestamps explicitly to remove time zone info
+  const start = new Date(startTime)
+    .toISOString()
+    .slice(0, 19)
+    .replace('T', ' ');
+  const end = new Date(endTime).toISOString().slice(0, 19).replace('T', ' ');
 
-    // Convert timestamps explicitly to remove time zone info
-    const start = new Date(startTime).toISOString().slice(0, 19).replace("T", " ");
-    const end = new Date(endTime).toISOString().slice(0, 19).replace("T", " ");
-
-    // Check workspace capacity
-    const capacityCheck = await db.query(
-        `SELECT w.base_capacity, wt.requires_approval
+  // Check workspace capacity
+  const capacityCheck = await db.query(
+    `SELECT w.base_capacity, wt.requires_approval
          FROM workspaces w
          JOIN workspace_types wt ON w.type_id = wt.id
          WHERE w.id = $1`,
-        [workspaceId]
-    );
+    [workspaceId]
+  );
 
-    if (!capacityCheck.rows.length) {
-        throw new Error('Workspace not found');
-    }
+  if (!capacityCheck.rows.length) {
+    throw new Error('Workspace not found');
+  }
 
-    const baseCapacity = capacityCheck.rows[0].base_capacity;
-    if (baseCapacity < attendees) {
-        throw new Error(`Attendees exceed workspace capacity of ${baseCapacity}`);
-    }
+  const baseCapacity = capacityCheck.rows[0].base_capacity;
+  if (baseCapacity < attendees) {
+    throw new Error(`Attendees exceed workspace capacity of ${baseCapacity}`);
+  }
 
-    // Check for conflicting bookings
-    const conflictCheck = await db.query(
-        `SELECT id FROM bookings
+  // Check for conflicting bookings
+  const conflictCheck = await db.query(
+    `SELECT id FROM bookings
          WHERE workspace_id = $1
          AND (
              (start_time < $3::timestamp AND end_time > $2::timestamp) OR
@@ -110,16 +117,16 @@ const createBooking = async (userId, workspaceId, startTime, endTime, attendees 
          )
          AND status IN ('confirmed', 'pending')
          LIMIT 1`,
-        [workspaceId, start, end]
-    );
+    [workspaceId, start, end]
+  );
 
-    if (conflictCheck.rows.length > 0) {
-        throw new Error('The selected time slot is already booked');
-    }
+  if (conflictCheck.rows.length > 0) {
+    throw new Error('The selected time slot is already booked');
+  }
 
-    // Create booking
-    const result = await db.query(
-        `INSERT INTO bookings 
+  // Create booking
+  const result = await db.query(
+    `INSERT INTO bookings 
          (user_id, workspace_id, start_time, end_time, attendees, special_requests, status)
          VALUES ($1, $2, $3::timestamp, $4::timestamp, $5, $6, 
            CASE WHEN $7 THEN 'pending' ELSE 'confirmed' END)
@@ -128,25 +135,23 @@ const createBooking = async (userId, workspaceId, startTime, endTime, attendees 
          (SELECT name FROM workspace_types WHERE id = (
            SELECT type_id FROM workspaces WHERE id = $2
          )) AS workspace_type`,
-        [
-            userId,
-            workspaceId,
-            start,
-            end,
-            attendees,
-            specialRequests,
-            capacityCheck.rows[0].requires_approval
-        ]
-    );
+    [
+      userId,
+      workspaceId,
+      start,
+      end,
+      attendees,
+      specialRequests,
+      capacityCheck.rows[0].requires_approval,
+    ]
+  );
 
-    if (!result.rows.length) {
-        throw new Error('Booking creation failed');
-    }
+  if (!result.rows.length) {
+    throw new Error('Booking creation failed');
+  }
 
-    return result.rows[0];
+  return result.rows[0];
 };
-
-
 
 /**
  * @async
@@ -160,13 +165,18 @@ const createBooking = async (userId, workspaceId, startTime, endTime, attendees 
  * @throws {Error} Will throw an error if database query fails
  */
 
-const getWorkspaceAvailability = async (workspaceId, startTime, endTime, attendees = 1) => {
-    const workspace = await getWorkspaceCapacity(workspaceId);
-    const baseCapacity = parseInt(workspace.base_capacity, 10);
-    const numAttendees = parseInt(attendees, 10);
+const getWorkspaceAvailability = async (
+  workspaceId,
+  startTime,
+  endTime,
+  attendees = 1
+) => {
+  const workspace = await getWorkspaceCapacity(workspaceId);
+  const baseCapacity = parseInt(workspace.base_capacity, 10);
+  const numAttendees = parseInt(attendees, 10);
 
-    const result = await db.query(
-        `WITH conflicting_bookings AS (
+  const result = await db.query(
+    `WITH conflicting_bookings AS (
              SELECT SUM(attendees) AS total_attendees
              FROM bookings
              WHERE workspace_id = $1
@@ -185,21 +195,21 @@ const getWorkspaceAvailability = async (workspaceId, startTime, endTime, attende
              $6 AS workspace_type,
              $7 AS location
          FROM conflicting_bookings cb`,
-        [
-            workspaceId,
-            startTime,
-            endTime,
-            baseCapacity,
-            numAttendees,
-            workspace.type_name,
-            workspace.location
-        ]
-    );
+    [
+      workspaceId,
+      startTime,
+      endTime,
+      baseCapacity,
+      numAttendees,
+      workspace.type_name,
+      workspace.location,
+    ]
+  );
 
-    return {
-        ...result.rows[0],
-        requires_approval: workspace.requires_approval
-    };
+  return {
+    ...result.rows[0],
+    requires_approval: workspace.requires_approval,
+  };
 };
 
 /**
@@ -214,9 +224,12 @@ const getWorkspaceAvailability = async (workspaceId, startTime, endTime, attende
  * @returns {Promise<Array<Object>>} Array of enriched booking records
  * @throws {Error} Will throw an error if database query fails
  */
-const getUserBookings = async (userId, options = { upcoming: true, limit: 50, offset: 0 }) => {
-    const result = await db.query(
-        `SELECT 
+const getUserBookings = async (
+  userId,
+  options = { upcoming: true, limit: 50, offset: 0 }
+) => {
+  const result = await db.query(
+    `SELECT 
              b.*,
              w.name AS workspace_name,
              wt.name AS workspace_type,
@@ -237,14 +250,14 @@ const getUserBookings = async (userId, options = { upcoming: true, limit: 50, of
          END
          ORDER BY b.start_time ${options.upcoming ? 'ASC' : 'DESC'}
          LIMIT $3 OFFSET $4`,
-        [userId, options.upcoming, options.limit, options.offset]
-    );
-    return result.rows;
+    [userId, options.upcoming, options.limit, options.offset]
+  );
+  return result.rows;
 };
 
 module.exports = {
-    getWorkspaceCapacity,
-    createBooking,
-    getWorkspaceAvailability,
-    getUserBookings
+  getWorkspaceCapacity,
+  createBooking,
+  getWorkspaceAvailability,
+  getUserBookings,
 };

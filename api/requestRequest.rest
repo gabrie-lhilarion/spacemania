@@ -4,8 +4,8 @@ Content-Type: application/json
 
 {
     "name": "Muhammad Bashir Ibrahim",
-    "email": "mbashirhibrahim7@gmail.com",
-    "password": "muhdbashir"
+    "email": "zaccodder@gmail.com",
+    "password": "zaccodder"
 }
 
 
@@ -14,21 +14,23 @@ POST http://localhost:5000/api/v1/auth/login
 Content-Type: application/json
 
 {
-    "email": "mbashiribrahim7@gmail.com",
-    "password": "muhdbashir"
+    "email": "zaccodder@gmail.com",
+    "password": "zaccodder"
 }
 
 ### get all users
 GET http://localhost:5000/api/v1/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNTgzMDQ2fQ.HDBGdK-760kQPQtJfvzn8bS-Ez2sGQeVRiOiKB9BzaQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiaWF0IjoxNzQzNjkzMzYzfQ.qvSSnTbKPr8pjJzbzMLC1lUOArd7iVNfGng2gNX4SH8
 
 
 ### get single user
-GET http://localhost:5000/api/v1/users/1
+GET http://localhost:5000/api/v1/users/7
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiaWF0IjoxNzQzNjkzMzYzfQ.qvSSnTbKPr8pjJzbzMLC1lUOArd7iVNfGng2gNX4SH8
 
 ### update user
-PUT  http://localhost:5000/api/v1/users/1
+PUT  http://localhost:5000/api/v1/users/7
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiaWF0IjoxNzQzNjkzMzYzfQ.qvSSnTbKPr8pjJzbzMLC1lUOArd7iVNfGng2gNX4SH8
 
 {
     "name": "muhd bashir"
@@ -36,15 +38,16 @@ Content-Type: application/json
 
 ### delete user
 DELETE http://localhost:5000/api/v1/users/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiaWF0IjoxNzQzNjkzMzYzfQ.qvSSnTbKPr8pjJzbzMLC1lUOArd7iVNfGng2gNX4SH8
 
 ### create booking
 POST  http://localhost:5000/api/v1/bookings
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzQzNjUxMDg1fQ.RYJcJ6UFBnbiQVI_UVvKtSn2yymvg3z8uDAo9le1YR4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNjkxMjU4fQ.M-yfSMpPXAcDW5vc2LijIjxd7O4s_UWKksER5hO7nLg
 
 {
 
-  "workspaceId": 1,
+  "workspaceId": 3,
   "startTime": "2025-07-25T14:00:00",
   "endTime": "2025-07-25T16:00:00",
   "attendees": 4,
@@ -53,14 +56,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxN
 
 
 ###
- GET http://localhost:5000/api/v1/bookings/availability/1?startTime=2025-07-25T14:00:00Z&endTime=2025-07-25T16:00:00Z&attendees=6
-
-
+ GET http://localhost:5000/api/v1/bookings/availability/3?startTime=2025-07-25T14:00:00Z&endTime=2025-07-25T16:00:00Z&attendees=6
 
 ###
  GET http://localhost:5000/api/v1/bookings/
 
-
 ###
 GET http://localhost:5000/api/v1/bookings/user?upcoming=true&page=1&limit=5
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzQzNjY4NTcyfQ.tMWQlQbUEgjNPNhV9D0IcggTfD5GInByKcIt9zR_saM
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiaWF0IjoxNzQzNjkzMzYzfQ.qvSSnTbKPr8pjJzbzMLC1lUOArd7iVNfGng2gNX4SH8
