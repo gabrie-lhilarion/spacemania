@@ -4,6 +4,7 @@ const errorHandler = require('./middlewares/errorHandler.middleware');
 const authRoutes = require('./routes/auth.routes');
 const userRouter = require('./routes/users.routes');
 const workspaceRouter = require('./routes/workspaces.routes');
+const bookingRouter = require('./routes/bookings.routes');
 
 const setupDatabase = require('./database/setup/setup.setup');
 
@@ -46,6 +47,7 @@ async function initializeApp() {
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/users', userRouter);
   app.use('/api/v1/workspaces', workspaceRouter);
+  app.use('/api/v1/bookings', bookingRouter);
 
   // error middleware
   app.use(errorHandler);

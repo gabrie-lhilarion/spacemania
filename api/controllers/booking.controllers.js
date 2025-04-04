@@ -1,5 +1,5 @@
-const db = require('../database/connection/connect');
-const { BadRequestError } = require('../errors');
+const db = require('../database/connection/connect.connection');
+const { BadRequestError } = require('../errors/index.errors');
 const bookingsDb = require('../database/bookings/booking.database');
 
 /**
@@ -12,10 +12,14 @@ async function createBooking(req, res, next) {
     const client = await db.pool.connect();
 
     try {
-        const { workspaceId, startTime, endTime, attendees = 1, specialRequests } = req.body;
-
-        //const userId = req.user.id;
-        const userId = 1;
+        const {
+            workspaceId,
+            startTime,
+            endTime,
+            attendees = 1,
+            specialRequests,
+        } = req.body;
+        const userId = 6;
 
         // Convert string dates to Date objects if needed
         const start = new Date(startTime);
@@ -23,12 +27,12 @@ async function createBooking(req, res, next) {
 
         // Basic validation
         if (start >= end) {
-            console.log('End time must be after start time')
+            console.log('End time must be after start time');
             throw new BadRequestError('End time must be after start time');
         }
 
         if (start < new Date()) {
-            console.log('Cannot book in the past')
+            console.log('Cannot book in the past');
             throw new BadRequestError('Cannot book in the past');
         }
 
@@ -43,9 +47,11 @@ async function createBooking(req, res, next) {
         );
 
         if (!availability.is_available) {
-            console.log('Workspace not available for the requested time/slots')
+            console.log('Workspace not available for the requested time/slots');
 
-            throw new BadRequestError('Workspace not available for the requested time/slots');
+            throw new BadRequestError(
+                'Workspace not available for the requested time/slots'
+            );
         }
 
         // Create the booking
@@ -64,20 +70,19 @@ async function createBooking(req, res, next) {
         res.status(201).json({
             success: true,
             data: booking,
-            message: booking.status === 'pending'
-                ? 'Booking request submitted for approval'
-                : 'Booking confirmed'
+            message:
+                booking.status === 'pending'
+                    ? 'Booking request submitted for approval'
+                    : 'Booking confirmed',
         });
-
     } catch (err) {
         await client.query('ROLLBACK');
-        console.log(err)
+        console.log(err);
         if (err.code === '23505') {
             next(new BadRequestError('Timeslot already booked'));
         } else if (err instanceof BadRequestError) {
             next(err);
         } else {
-
             next(new BadRequestError('Failed to create booking', err));
         }
     } finally {
@@ -109,8 +114,10 @@ async function checkAvailability(req, res, next) {
         const earliestAllowedStart = new Date(now.getTime() + MIN_BOOKING_BUFFER);
 
         // Validate date objects
-        if (isNaN(start.getTime())) throw new BadRequestError('Invalid start time format');
-        if (isNaN(end.getTime())) throw new BadRequestError('Invalid end time format');
+        if (isNaN(start.getTime()))
+            throw new BadRequestError('Invalid start time format');
+        if (isNaN(end.getTime()))
+            throw new BadRequestError('Invalid end time format');
 
         // Time validations
         if (start >= end) {
@@ -118,7 +125,9 @@ async function checkAvailability(req, res, next) {
         }
 
         if (start < earliestAllowedStart) {
-            throw new BadRequestError('Bookings require at least 24 hours advance notice');
+            throw new BadRequestError(
+                'Bookings require at least 24 hours advance notice'
+            );
         }
 
         // Validate attendees is a positive number
@@ -129,7 +138,9 @@ async function checkAvailability(req, res, next) {
         // Check workspace capacity
         const workspace = await bookingsDb.getWorkspaceCapacity(workspaceId);
         if (attendees > workspace.capacity) {
-            throw new BadRequestError(`Workspace only accommodates ${workspace.capacity} attendees`);
+            throw new BadRequestError(
+                `Workspace only accommodates ${workspace.capacity} attendees`
+            );
         }
 
         const availability = await bookingsDb.getWorkspaceAvailability(
@@ -143,16 +154,18 @@ async function checkAvailability(req, res, next) {
             success: true,
             data: {
                 ...availability,
-                bufferNotice: 'All bookings require 24-hour advance notice'
-            }
+                bufferNotice: 'All bookings require 24-hour advance notice',
+            },
         });
-
     } catch (err) {
-        console.log(err)
-        next(err instanceof BadRequestError ? err : new BadRequestError('Availability check failed'));
+        console.log(err);
+        next(
+            err instanceof BadRequestError
+                ? err
+                : new BadRequestError('Availability check failed')
+        );
     }
 }
-
 
 /**
  * Get user's booking history
@@ -163,13 +176,13 @@ async function checkAvailability(req, res, next) {
 async function getUserBookings(req, res, next) {
     try {
         const userId = req.user.id;
-        console.log(userId)
+        console.log(userId);
         const { upcoming = 'true', page = 1, limit = 10 } = req.query;
 
         const bookings = await bookingsDb.getUserBookings(userId, {
             upcoming: upcoming === 'true',
             offset: (page - 1) * limit,
-            limit: parseInt(limit)
+            limit: parseInt(limit),
         });
 
         res.json({
@@ -178,10 +191,9 @@ async function getUserBookings(req, res, next) {
             pagination: {
                 page: parseInt(page),
                 limit: parseInt(limit),
-                total: bookings.length
-            }
+                total: bookings.length,
+            },
         });
-
     } catch (err) {
         next(new BadRequestError('Failed to fetch bookings', err));
     }
@@ -213,25 +225,30 @@ async function cancelBooking(req, res, next) {
 
         // Don't allow cancelling completed or already cancelled bookings
         if (['cancelled', 'completed'].includes(booking.rows[0].status)) {
-            throw new BadRequestError('Cannot cancel a completed or already cancelled booking');
+            throw new BadRequestError(
+                'Cannot cancel a completed or already cancelled booking'
+            );
         }
 
         // Update status to cancelled
-        await client.query(
-            'UPDATE bookings SET status = $1 WHERE id = $2',
-            ['cancelled', id]
-        );
+        await client.query('UPDATE bookings SET status = $1 WHERE id = $2', [
+            'cancelled',
+            id,
+        ]);
 
         await client.query('COMMIT');
 
         res.json({
             success: true,
-            message: 'Booking cancelled successfully'
+            message: 'Booking cancelled successfully',
         });
-
     } catch (err) {
         await client.query('ROLLBACK');
-        next(err instanceof BadRequestError ? err : new BadRequestError('Failed to cancel booking', err));
+        next(
+            err instanceof BadRequestError
+                ? err
+                : new BadRequestError('Failed to cancel booking', err)
+        );
     } finally {
         client.release();
     }
@@ -241,5 +258,5 @@ module.exports = {
     createBooking,
     checkAvailability,
     getUserBookings,
-    cancelBooking
+    cancelBooking,
 };

@@ -61,3 +61,30 @@ GET http://localhost:5000/api/v1/workspaces/2
 
 ### Get all workspaces with filtering and pagination
 GET http://localhost:5000/api/v1/workspaces?type_id=1&floor=2&includeInactive=true&limit=10&offset=0
+
+
+
+POST  http://localhost:5000/api/v1/bookings
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNjkxMjU4fQ.M-yfSMpPXAcDW5vc2LijIjxd7O4s_UWKksER5hO7nLg
+
+{
+
+  "workspaceId": 3,
+  "startTime": "2025-07-25T14:00:00",
+  "endTime": "2025-07-25T16:00:00",
+  "attendees": 4,
+  "specialRequests": "Need a projector"
+}
+###
+GET  http://localhost:5000/api/v1/bookings/availability/3?startTime=2025-07-25T14:00:00Z&endTime=2025-07-25T16:00:00Z&attendees=6
+
+
+
+###
+GET http://localhost:5000/api/v1/bookings/
+
+
+###
+GET http://localhost:5000/api/v1/bookings/user?upcoming=true&page=1&limit=5
+Authorization: Bearer Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiaWF0IjoxNzQzNjkxMjU4fQ.M-yfSMpPXAcDW5vc2LijIjxd7O4s_UWKksER5hO7nLg
