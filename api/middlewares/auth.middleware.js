@@ -64,6 +64,8 @@ const authMiddleware = async (req, res, next) => {
 
     // Attach the decoded token (user details) to the `req` object.
     req.user = decodedToken;
+    console.log(decodedToken)
+    console.log(req.user)
     next();
   } catch (error) {
     // Pass any errors that occur to the next middleware or error handler.

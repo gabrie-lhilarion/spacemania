@@ -41,7 +41,7 @@ async function initializeApp() {
   });
 
   // Phase 3: Server Startup
-  app.get('/', (req, res) => res.send('Sapce managemnt API Running!'));
+  app.get('/', (req, res) => res.send('Space management API Running!'));
 
   // routers
   app.use('/api/v1/auth', authRoutes);
