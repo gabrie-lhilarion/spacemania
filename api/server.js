@@ -1,63 +1,30 @@
-const express = require('express');
-const cors = require('cors');
-const errorHandler = require('./middlewares/errorHandler.middleware');
-const authRoutes = require('./routes/auth.routes');
-const userRouter = require('./routes/users.routes');
-const workspaceRouter = require('./routes/workspaces.routes');
-const bookingRouter = require('./routes/bookings.routes');
+const app = require("./app");
+const setupDatabase = require("./database/setup/setup.setup");
 
-const setupDatabase = require('./database/setup/setup.setup');
-
-async function initializeApp() {
+async function startServer() {
   // Phase 1: Database Setup
   try {
-    console.log('Initializing database...');
+    console.log("Initializing database...");
     await setupDatabase();
-    console.log('Database ready');
+    console.log("Database ready");
   } catch (err) {
-    console.error('Database initialization error:', err);
-
+    console.error("Database initialization error:", err);
     // Graceful shutdown if database is critical
-    if (err.message.includes('connection refused')) {
-      console.error('Fatal database connection error');
+    if (err.code === "ECONNREFUSED" || err.code === "ENOTFOUND") {
+      console.error("Fatal database connection error");
       process.exit(1);
     }
 
     // Continue for non-critical errors (like existing tables)
   }
 
-  // Phase 2: Express App Setup
-
-  const app = express();
-  app.use(cors());
-  app.use(express.json());
-
-  // Middleware, routes, etc.
-  app.get('/health', (req, res) => {
-    res.json({
-      status: 'OK',
-      database: 'connected',
-    });
-  });
-
-  // Phase 3: Server Startup
-  app.get('/', (req, res) => res.send('Space management API Running!'));
-
-  // routers
-  app.use('/api/v1/auth', authRoutes);
-  app.use('/api/v1/users', userRouter);
-  app.use('/api/v1/workspaces', workspaceRouter);
-  app.use('/api/v1/bookings', bookingRouter);
-
-  // error middleware
-  app.use(errorHandler);
-
+  // Start server if database connection is successful
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 // Start with proper error handling
-initializeApp().catch((err) => {
-  console.error('Application startup failed:', err);
+startServer().catch((err) => {
+  console.error("Application startup failed:", err);
   process.exit(1);
 });
