@@ -214,10 +214,7 @@ async function cancelBooking(req, res, next) {
         await client.query('BEGIN');
 
         // Verify booking belongs to user
-        const booking = await client.query(
-            'SELECT * FROM bookings WHERE id = $1 AND user_id = $2',
-            [id, userId]
-        );
+        const booking = await bookingsDb.bookingBelongToUser(id, userId);
 
         if (booking.rows.length === 0) {
             throw new BadRequestError(404, 'Booking not found');
@@ -231,10 +228,7 @@ async function cancelBooking(req, res, next) {
         }
 
         // Update status to cancelled
-        await client.query('UPDATE bookings SET status = $1 WHERE id = $2', [
-            'cancelled',
-            id,
-        ]);
+        await bookingsDb.updateBookingToCancelled(id);
 
         await client.query('COMMIT');
 

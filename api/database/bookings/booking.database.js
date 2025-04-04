@@ -253,9 +253,86 @@ const getUserBookings = async (
   return result.rows;
 };
 
+
+/**
+ * Checks if a booking belongs to a specific user.
+ *
+ * @async
+ * @function bookingBelongToUser
+ * @param {number} id - The ID of the booking.
+ * @param {number} userId - The ID of the user.
+ * @returns {Promise<Object>} - A promise that resolves to the booking object if it belongs to the user, or an empty result if not.
+ * @throws {Error} - Throws an error if the database query fails.
+ *
+ * @example
+ * // Usage:
+ * const booking = await bookingBelongToUser(123, 456);
+ * if (booking.rows.length > 0) {
+ * console.log('Booking belongs to user:', booking.rows[0]);
+ * } else {
+ * console.log('Booking does not belong to user.');
+ * }
+ */
+const bookingBelongToUser = async (id, userId) => {
+  const client = await db.pool.connect();
+  try {
+    const booking = await client.query(
+      'SELECT * FROM bookings WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+
+    return booking;
+  } catch (error) {
+    console.error("Database error in bookingBelongToUser:", error);
+    throw error;
+  } finally {
+    if (client) {
+      client.release(); // Release the client back to the pool
+    }
+  }
+};
+
+
+/**
+ * Updates the status of a booking to 'cancelled'.
+ *
+ * @async
+ * @function updateBookingToCancelled
+ * @param {number} id - The ID of the booking to update.
+ * @returns {Promise<void>} - A promise that resolves when the booking status is successfully updated.
+ * @throws {Error} - Throws an error if the database query fails.
+ *
+ * @example
+ * // Usage:
+ * try {
+ * await updateBookingToCancelled(123);
+ * console.log('Booking 123 has been cancelled.');
+ * } catch (error) {
+ * console.error('Failed to cancel booking:', error);
+ * }
+ */
+const updateBookingToCancelled = async (id) => {
+  const client = await db.pool.connect();
+  try {
+    await client.query('UPDATE bookings SET status = $1 WHERE id = $2', [
+      'cancelled',
+      id,
+    ]);
+  } catch (error) {
+    console.error("Database error updating booking:", error);
+    throw error;
+  } finally {
+    if (client) {
+      client.release(); // Release the client back to the pool
+    }
+  }
+};
+
 module.exports = {
   getWorkspaceCapacity,
   createBooking,
   getWorkspaceAvailability,
   getUserBookings,
+  bookingBelongToUser,
+  updateBookingToCancelled
 };
