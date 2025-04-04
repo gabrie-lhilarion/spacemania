@@ -13,6 +13,8 @@ async function createBooking(req, res, next) {
 
     try {
         const { workspaceId, startTime, endTime, attendees = 1, specialRequests } = req.body;
+
+        //const userId = req.user.id;
         const userId = 1;
 
         // Convert string dates to Date objects if needed
