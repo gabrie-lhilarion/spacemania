@@ -82,7 +82,7 @@ const login = async (req, res, next) => {
       throw new BadRequestError('Invalid login credentials');
     }
 
-    const token = generateAuthToken(user.id);
+    const token = generateAuthToken(user.id, user.email, user.role);
     res.json({ user, token });
   } catch (error) {
     next(error);

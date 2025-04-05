@@ -1,4 +1,4 @@
-const db = require("../connection/connect.connection");
+const db = require('../connection/connect.connection');
 const {
   createExtension,
   createUserTable,
@@ -11,7 +11,7 @@ const {
   createNoDoubleBookingConstraint,
   insertDefaultWorkspaceTypes,
   insertDefaultAmenities,
-} = require("./queries");
+} = require('./queries');
 
 /**
  * Initializes the database by creating necessary tables, constraints, indexes, and default data.
@@ -22,8 +22,8 @@ const {
 async function setupDatabase() {
   const client = await db.pool.connect();
   try {
-    console.log("Starting database initialization...");
-    await client.query("BEGIN");
+    console.log('Starting database initialization...');
+    await client.query('BEGIN');
     await client.query(createExtension);
     await client.query(createUserTable);
     await client.query(createWorkspaceTypeTable);
@@ -35,11 +35,11 @@ async function setupDatabase() {
     await client.query(createNoDoubleBookingConstraint);
     await client.query(insertDefaultWorkspaceTypes);
     await client.query(insertDefaultAmenities);
-    await client.query("COMMIT");
-    console.log("Database initialized successfully");
+    await client.query('COMMIT');
+    console.log('Database initialized successfully');
   } catch (err) {
-    await client.query("ROLLBACK");
-    console.error("Database initialization failed:", err.message);
+    await client.query('ROLLBACK');
+    console.error('Database initialization failed:', err.message);
   } finally {
     client.release();
   }

@@ -74,8 +74,11 @@ const comparePassword = async (user, password) => {
  * @returns {string} Signed JWT token containing user ID payload
  * @throws {Error} Will throw an error if JWT signing fails
  */
-const generateAuthToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET);
+const generateAuthToken = (userId, userEmail, userRole) => {
+  return jwt.sign(
+    { id: userId, email: userEmail, role: userRole },
+    process.env.JWT_SECRET
+  );
 };
 
 /**
